@@ -3,6 +3,8 @@ var __assert = require('assert')
 
 var fail = {v:'<fail>'}
 
+var dbg = 0
+
 function Stream(buf,oft){
   this.b = buf || null
   this.i = oft || 0
@@ -92,23 +94,23 @@ Seq.prototype = {
       break
     }
     default:{
-      console.log('not a seq',b0.toString(16))
+      dbg && console.log('not a seq',b0.toString(16))
       return fail
     }
     }
     if(len !== this.items.length){
-      console.log('seq len doesn\'t match')
+      dbg && console.log('seq len doesn\'t match')
       return fail
     }
     s.i = base
     var ee = []
     for(var i=0;i<len;i++){
       var item = this.items[i]
-      console.log(item)
-      console.log(s)
+      dbg && console.log(item)
+      dbg && console.log(s)
       var r = item.parse(s)
       if(r === fail){
-        console.log('item fail')
+        dbg && console.log('item fail')
         return fail
       }
       ee.push(r)
@@ -229,7 +231,7 @@ String.prototype = {
       break
     }
     default:{
-      console.log('not a string',s,b0.toString(16))
+      dbg && console.log('not a string',s,b0.toString(16))
       return fail
     }
     }
