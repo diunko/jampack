@@ -165,6 +165,58 @@ List.prototype = {
   }
 }
 
+function Map(key, item){
+  this.key = null
+  this.item = null
+}
+
+Map.prototype = {
+  __proto__:Parser.prototype,
+  def:function(key, item){
+    var M = new Map()
+    M.key = Parser.lift(key)
+    M.item = Parser.lift(item)
+    return M
+  },
+  _parse:function(s){
+    var b0 = s.b[s.i]
+    switch(true){
+    case (b0 & 0xf0) === 0x80:{
+      var len = b0 & 0x0f
+      var base = s.i+1
+      break
+    }
+    case b0 === 0xde:{
+      var len = (s.b[s.i+1]<<8)+s.b[s.i+2]
+      var base = s.i+3
+      break
+    }
+    case b0 === 0xdf:{
+      var len = (s.b[s.i+1]<<24) + (s.b[s.i+2]<<16) + (s.b[s.i+3]<<8) + (s.b[s.i+4])
+      var base = s.i+5
+      break
+    }
+    default:{
+      return fail
+    }
+    }
+    s.i = base
+    var ee = {}
+    for(var i=0;i<len;i++){
+      var k = this.key.parse(s)
+      if(k === fail){
+          return fail
+      }
+      var v = this.item.parse(s)
+      if(v === fail){
+        return fail
+      }
+      ee[k] = v
+    }
+    return ee
+  }
+}
+
 function Binary(){}
 
 Binary.prototype = {
@@ -252,6 +304,9 @@ function seq(){
 function list(){
   return List.prototype.def.apply(List,arguments)
 }
+function map(){
+  return Map.prototype.def.apply(Map,arguments)
+}
 function string(){
   return String.prototype.def.apply(String,arguments)
 }
@@ -262,6 +317,7 @@ function binary(){
 module.exports = function(){return Parser.lift.apply(Parser,arguments)}
 module.exports.seq = seq
 module.exports.list = list
+module.exports.map = map
 module.exports.string = string
 module.exports.binary = binary
 module.exports.Stream = function(buf,oft){return new Stream(buf,oft)}
