@@ -53,3 +53,21 @@ console.log(
          'binary-body']))))
 
 
+var P = jp.map(jp.string, jp.string)
+
+console.log(
+    P.parse(
+        jp.Stream(
+            mp.pack({"abcde":"ghijkl"}))))
+
+
+console.log(
+    P.parse(
+        jp.Stream(
+            mp.pack({"abcde":"ghijkl", "abcde1":"ghijkl", "abcde2":"ghijkl",
+            "abcde3":"ghijkl", "abcde4":"ghijkl", "abcde5":"ghijkl",
+            "abcde6":"ghijkl", "abcde7":"ghijkl", "abcde8":"ghijkl",
+            "abcde9":"ghijkl", "abcde10":"ghijkl", "abcde11":"ghijkl",
+            "abcde12":"ghijkl", "abcde13":"ghijkl", "abcde14":"ghijkl",
+            "abcde15":"ghijkl", "abcde16":"ghijkl"}))))
+
