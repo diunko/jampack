@@ -71,3 +71,14 @@ console.log(
             "abcde12":"ghijkl", "abcde13":"ghijkl", "abcde14":"ghijkl",
             "abcde15":"ghijkl", "abcde16":"ghijkl"}))))
 
+
+
+var P = jp([jp.string, jp.bool, jp.string, jp.int, jp.int, jp.string, jp.bool])
+
+console.log(
+  P.parse(
+    jp.Stream(
+      mp.pack(['1234123', true ,'oaijsfoiads', 123, 23, 'osidoindf', false]))))
+
+
+

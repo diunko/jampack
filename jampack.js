@@ -62,6 +62,150 @@ Parser.prototype = {
   }
 }
 
+
+function Bool(){}
+
+Bool.prototype = {
+  __proto__: Parser.prototype,
+  _parse: function(s){
+    var b0 = s.b[s.i]
+    if(b0 === 0xc2){
+      s.i += 1
+      return false
+    } else if (b0 === 0xc3){
+      s.i += 1
+      return true
+    } else {
+      return fail
+    }
+  }
+}
+
+function getUint8(b,o){
+  return b[o]
+}
+
+function getUint16(b,o){
+  return (b[o]<<8)|b[o+1]
+}
+
+
+function getUint32(b,o){
+  return ((b[o]<<24)
+    |(b[o+1]<<16)
+    |(b[o+2]<<8)
+    |(b[o+3]))>>>0
+}
+
+var MAX_INT = 0x1fffffffffffff
+var MAX_HI = 0x1fffff
+
+function getUint64(b,o){
+  var hi = ((b[o]<<24)
+         |(b[o+1]<<16)
+         |(b[o+2]<<8)
+         |(b[o+3]))>>>0
+  var lo = ((b[o+4]<<24)
+         |(b[o+6]<<16)
+         |(b[o+6]<<8)
+         |(b[o+7]))>>>0
+  __assert(hi <= MAX_HI, 'uint53 overflow')
+  return hi*0x100000000+lo
+}
+
+function getInt8(b,o){
+  var r = getUint8(b,o)
+  return r&0x80? 0xffffff00|r : r
+}
+function getInt16(b,o){
+  var r = getUint16(b,o)
+  return r&0x80000? 0xffff0000|r : r
+}
+
+function getInt32(b,o){
+  return getUint32(b,o)|0
+}
+
+function getInt64(b,o){
+  var hi = ((b[o]<<24)
+         |(b[o+1]<<16)
+         |(b[o+2]<<8)
+         |(b[o+4]))
+  var lo = ((b[o+4]<<24)
+         |(b[o+5]<<16)
+         |(b[o+6]<<8)
+         |(b[o+7]))
+  if(!(lo|hi))return 0
+  if(lo === 0){
+    var lo_ = 0xffffffff|0
+    var hi_ = ~((hi-1)|0)
+  } else {
+    var lo_ = ~((lo-1)|0)
+    var hi_ = ~hi
+  }
+  __assert(hi <= MAX_HI, 'int53 overflow')
+  return -(hi*0x100000000+lo)
+
+}
+
+
+function Int(){}
+
+Int.prototype = {
+  __proto__: Parser.prototype,
+  _parse: function(s){
+    var b0 = s.b[s.i]
+    var r = 0, o =0
+
+    if((0x7f & b0) === b0){
+      r = b0
+      o = 0
+    } else {
+      
+      switch(b0){
+      case 0xcc: //uint8
+        r = getUint8(s.b, s.i+1)
+        o = 1
+        break
+      case 0xcd: //uint16
+        r = getUint16(s.b, s.i+1)
+        o = 2
+        break
+      case 0xce: //uint32
+        r = getUint32(s.b, s.i+1)
+        o = 4
+        break
+      case 0xcf: //uint64
+        r = getUint64(s.b, s.i+1)
+        o = 8
+        break
+
+      case 0xd0: //int8
+        r = getInt8(s.b, s.i+1)
+        o = 1
+        break
+      case 0xd1: //int16
+        r = getInt16(s.b, s.i+1)
+        o = 2
+        break
+      case 0xd2: //int32
+        r = getInt32(s.b, s.i+1)
+        o = 4
+        break
+      case 0xd3: //int64
+        r = getInt64(s.b, s.i+1)
+        o = 8
+        break
+      default:
+        return fail
+      }
+
+    }
+    s.i += o + 1
+    return r
+  }
+}
+
 function Seq(pp){
   this.items = (pp || [])
 }
@@ -291,13 +435,15 @@ String.prototype = {
   }
 }
 
-function seq(){
-  return Seq.prototype.def.apply(Seq,arguments)
-}
-
 Parser.lift = Parser.prototype.lift
 Seq.def = Seq.prototype.def
 
+function bool(){
+  return new Bool()
+}
+function int(){
+  return new Int()
+}
 function seq(){
   return Seq.prototype.def.apply(Seq,arguments)
 }
@@ -315,6 +461,8 @@ function binary(){
 }
 
 module.exports = function(){return Parser.lift.apply(Parser,arguments)}
+module.exports.int = int
+module.exports.bool = bool
 module.exports.seq = seq
 module.exports.list = list
 module.exports.map = map

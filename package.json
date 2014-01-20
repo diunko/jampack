@@ -1,6 +1,6 @@
 {
   "name": "jampack",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "unpack msgpack just how you like",
   "main": "jampack.js",
   "dependencies": {
