@@ -1,13 +1,13 @@
 {
   "name": "jampack",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "unpack msgpack just how you like",
   "main": "jampack.js",
   "dependencies": {
-    "msgpack": "~0.1.11"
   },
   "devDependencies": {
-    "mocha": "~1.12.0"
+    "mocha": "~1.12.0",
+    "msgpack": "~0.1.11"
   },
   "scripts": {
     "test": "node_modules/.bin/mocha"
